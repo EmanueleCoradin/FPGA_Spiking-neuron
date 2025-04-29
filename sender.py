@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import serial
 import struct
+import time
 
 
 def encode_for_uart(matrix):
@@ -37,6 +38,7 @@ def encode_for_uart(matrix):
 
     return np.array(encoded_data)
 
+
 # Open UART port
 ser = serial.Serial('/dev/ttyUSB0', baudrate=115200)
 print(f"Connection opened.")
@@ -52,9 +54,18 @@ print(f"Sending data.")
 # Display a small portion of the encoded data
 for col in encoded_matrix:
     # Extract the column (as a byte array)
-    col_data = col.tobytes()
-    
+    col_data = col.encode('utf-8')  # Ensure data is in bytes
+ 
     # Send the column data via UART
     ser.write(col_data)
+
+    # Wait for confirmation (the FPGA sends a byte back indicating success)
+    response = ser.read(1)  # Read 1 byte from the UART
+
+    if response == b'\x01':  # Assuming FPGA sends 0x01 for success
+        print("Message successfully received by FPGA!")
+    else:
+        print("Error in receiving the message.")
+
 print(f"Data sent via UART.")
 ser.close()

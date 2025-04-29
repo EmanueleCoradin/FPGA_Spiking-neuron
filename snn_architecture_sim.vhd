@@ -9,7 +9,7 @@ end tb_snn_spikes;
 architecture behavior of tb_snn_spikes is
 
     -- Component Declaration for the Unit Under Test (UUT)
-    component snn_spikes
+    component snn_architecture
         port(
             clk         : in  std_logic;
             reset_n     : in  std_logic;
@@ -50,7 +50,7 @@ architecture behavior of tb_snn_spikes is
 
 begin
     -- Instantiate the Unit Under Test (UUT)
-    uut: snn_spikes
+    uut: snn_architecture
         port map (
             clk => clk_tb,
             reset_n => reset_n_tb,
