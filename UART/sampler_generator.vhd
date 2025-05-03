@@ -50,26 +50,52 @@ begin
 
   -- State machine process: Handles state transitions for UART reception (start bit, data bits, stop bit)
   state_machine : process (clock) is
+    variable next_state : state_t := idle_s;  -- Declare a variable for the next state
   begin  -- process body
     if rising_edge(clock) then          -- Trigger action on the rising edge of the clock
+      state <= next_state;              -- Commit the state transition to the signal after the process
       case state is
         when idle_s =>  -- Initial idle state: Waiting for start bit (low signal on uart_rx)
           enable_counter <= '0';  -- Disable counter in idle state
           if uart_rx = '0' then  -- When uart_rx is low, start reception process
-            state <= start_s;    -- Transition to start state
+            next_state := start_s;    -- Transition to start state
           end if;
         when start_s =>  -- Start state: Waiting for the start bit to be sampled
           enable_counter <= '1';  -- Enable the counter to start baud rate timing
           if pulse_out = '1' then -- Wait for pulse to indicate baud rate timing
-            state <= bit0_s;      -- Transition to receiving bit0
+            next_state := bit0_s;      -- Transition to receiving bit0
           end if;
-        when bit0_s to bit7_s =>  -- States for receiving bits 0 through 7
+        when bit0_s =>  -- States for receiving bits 0 through 7
           if pulse_out = '1' then -- Each time the pulse occurs, sample the next bit
-            state <= state'next;   -- Transition to the next bit state
+            next_state := bit1_s ;   -- Transition to the next bit state
+          end if;
+        when bit1_s =>  -- States for receiving bits 0 through 7
+          if pulse_out = '1' then -- Each time the pulse occurs, sample the next bit
+            next_state := bit2_s ;   -- Transition to the next bit state
+          end if;
+        when bit2_s =>  -- States for receiving bits 0 through 7
+          if pulse_out = '1' then -- Each time the pulse occurs, sample the next bit
+            next_state := bit3_s ;   -- Transition to the next bit state
+          end if;
+        when bit3_s =>  -- States for receiving bits 0 through 7
+          if pulse_out = '1' then -- Each time the pulse occurs, sample the next bit
+            next_state := bit4_s ;   -- Transition to the next bit state
+          end if;
+        when bit4_s =>  -- States for receiving bits 0 through 7
+          if pulse_out = '1' then -- Each time the pulse occurs, sample the next bit
+            next_state := bit5_s ;   -- Transition to the next bit state
+          end if;
+        when bit5_s =>  -- States for receiving bits 0 through 7
+          if pulse_out = '1' then -- Each time the pulse occurs, sample the next bit
+            next_state := bit6_s ;   -- Transition to the next bit state
+        end if;
+        when bit6_s =>  -- States for receiving bits 0 through 7
+          if pulse_out = '1' then -- Each time the pulse occurs, sample the next bit
+            next_state := bit7_s ;   -- Transition to the next bit state
           end if;
         when bit7_s =>  -- Final data bit (bit7)
           if pulse_out = '1' then
-            state <= idle_s;      -- After receiving bit7, return to idle state
+            next_state := idle_s;      -- After receiving bit7, return to idle state
           end if;
         when others => null;   -- Default case (should not be hit in normal operation)
       end case;
@@ -102,3 +128,4 @@ begin
   end process delay_line;
 
 end architecture rtl;
+

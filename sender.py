@@ -6,38 +6,37 @@ import time
 
 
 def encode_for_uart(matrix):
-    conversion = np.array([16, 8, 4, 2, 1])
-    encoded_data = []
+	conversion = np.array([16, 8, 4, 2, 1])
+	encoded_data = []
 
-    num_rows, num_columns = matrix.shape
-    for col in range(num_columns):
-        # Split the column into two parts: first 5 rows and last 5 rows 
-        first_part = matrix.iloc[0:5, col].values
-        second_part = matrix.iloc[5:10, col].values if num_rows > 5 else []
-        # Encode the first part
-        first_part_encoded = ''.join(format(int(first_part.dot(conversion)), '05b'))
-        
-        # Add 3 bits of 0 padding
-        if col == num_columns - 1:
-            first_part_encoded += '111'
-        else:
-            first_part_encoded += '000'
-        # Encode the second part
-        second_part_encoded = ''.join(format(int(second_part.dot(conversion)), '05b'))
-        # Add 3 bits of 0 padding
-        if col == num_columns - 1:
-            second_part_encoded += '111'
-        else:
-            second_part_encoded += '000'
+	num_rows, num_columns = matrix.shape
+	for col in range(num_columns):
+		# Split the column into two parts: first 5 rows and last 5 rows 
+		first_part = matrix.iloc[0:5, col].values
+		second_part = matrix.iloc[5:10, col].values if num_rows > 5 else []
+		# Encode the first part
+		first_part_encoded = int(first_part.dot(conversion))
 
-        # Concatenate both parts
-        full_encoded = first_part_encoded + second_part_encoded
+		# Add 3 bits of 0 padding
+		if col == num_columns - 1:
+			first_part_encoded = first_part_encoded*8+7
+		else:
+			first_part_encoded += first_part_encoded*8
+		first_part_encoded = first_part_encoded.to_bytes(1, 'big')
+		encoded_data.append(first_part_encoded)
 
-        # Store the encoded data for this column
-        encoded_data.append(full_encoded)
+		# Encode the second part
+		second_part_encoded = int(second_part.dot(conversion))
+		# Add 3 bits of 0 padding
+		if col == num_columns - 1:
+			second_part_encoded = second_part_encoded*8+7
+		else:
+			second_part_encoded += second_part_encoded*8
+		second_part_encoded = second_part_encoded.to_bytes(1, 'big')
 
-    return np.array(encoded_data)
+		encoded_data.append(second_part_encoded)
 
+	return encoded_data
 
 # Open UART port
 ser = serial.Serial('/dev/ttyUSB0', baudrate=115200)
@@ -50,22 +49,14 @@ matrix = pd.read_csv(file_path, header=None, nrows=10)
 print(f"Encoding data.")
 # Encode the matrix
 encoded_matrix = encode_for_uart(matrix)
+
 print(f"Sending data.")
 # Display a small portion of the encoded data
-for col in encoded_matrix:
-    # Extract the column (as a byte array)
-    col_data = col.encode('utf-8')  # Ensure data is in bytes
- 
-    # Send the column data via UART
-    ser.write(col_data)
+for col in [encoded_matrix[0]]:
+	print(col)
 
-    # Wait for confirmation (the FPGA sends a byte back indicating success)
-    response = ser.read(1)  # Read 1 byte from the UART
-
-    if response == b'\x01':  # Assuming FPGA sends 0x01 for success
-        print("Message successfully received by FPGA!")
-    else:
-        print("Error in receiving the message.")
+	# Send the column data via UART
+	ser.write(col)
 
 print(f"Data sent via UART.")
 ser.close()
