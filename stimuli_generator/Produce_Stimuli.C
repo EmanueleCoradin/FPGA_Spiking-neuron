@@ -355,7 +355,7 @@ void writeMatrixToFile(const vector<vector<int>>& matrix, const string& filename
     file.close();
 }
 
-void Produce_Stimuli(string rootInput="./DATA/muons_amuons_100k_100br.root", int _N_events=1, bool debugging=true){
+void Produce_Stimuli(string rootInput="./DATA/muons_amuons_100k_100br.root", int _N_events=2, bool debugging=true){
     auto [file, IT, OT, ET] = readRootFile(rootInput);
     for(ievent=0; ievent < _N_events; ievent++){
         if (ievent % NROOT == 0)
@@ -363,11 +363,15 @@ void Produce_Stimuli(string rootInput="./DATA/muons_amuons_100k_100br.root", int
             last_row_event_IT = 0;
             last_row_event_OT = 0;
         }
-
+		PreSpike_Time.clear();
+        PreSpike_Stream.clear();
+        PreSpike_Signal.clear();
+        PreSpike_Class.clear();
+        Reset_hits();
+        
         ReadFromProcessed(IT, OT, ET, ievent % NROOT + 1);
-
-        double t_in = ievent * (max_angle + Empty_buffer) / omega; // Initial time -> every event adds 25 ns
-        Encode(t_in);
+        Encode(0);
+        
         if (debugging)
         {
             cout << "Event " << ievent <<  "encoded" << endl;

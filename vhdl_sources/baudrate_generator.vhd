@@ -14,8 +14,8 @@ end entity baudrate_generator;
 -- Architecture: Describes the internal implementation of the component (RTL - Register Transfer Level)
 
 architecture rtl of baudrate_generator is
-  signal counter   : unsigned(9 downto 0) := (others => '0');       -- 10-bit counter, initialized to 0
-  constant divisor : unsigned(9 downto 0) := to_unsigned(867, 10);  -- Constant divisor value for generating the baud rate
+  signal counter   : unsigned(10 downto 0) := (others => '0');       -- 10-bit counter, initialized to 0
+  constant divisor : unsigned(10 downto 0) := to_unsigned(867, 11);  -- Constant divisor value for generating the baud rate
 begin  -- Start of the RTL architecture
 
   -- Main process: This process is sensitive to the clock signal (clock)

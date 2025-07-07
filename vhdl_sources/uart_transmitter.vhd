@@ -22,23 +22,20 @@ architecture rtl of uart_transmitter is
     port (
       clock        : in  std_logic;
       baudrate_out : out std_logic);
-  end component baudrate_generator;
+   end component baudrate_generator;
 
   signal baudrate_out : std_logic;
 -- state machine signals
   type state_t is (idle_s, data_valid_s, start_s, bit0_s, bit1_s, bit2_s, bit3_s, bit4_s, bit5_s, bit6_s, bit7_s, bit8_s, stop_s);
 
   signal state : state_t := idle_s;
+  
 begin  -- architecture rtl
 
-  baudrate_generator_1 : baudrate_generator
-    port map (
-      clock        => clock,
-      baudrate_out => baudrate_out);
-
-
-  -- State Machine
-
+baudrate_generator_1 : baudrate_generator
+   port map (
+     clock        => clock,
+     baudrate_out => baudrate_out);
 
   main_state_machine : process (clock) is
   begin  -- process main_state_machine
